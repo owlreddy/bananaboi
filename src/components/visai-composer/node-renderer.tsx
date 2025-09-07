@@ -10,6 +10,8 @@ interface NodeRendererProps {
   connections: Connection[];
   onMouseDown: (e: React.MouseEvent) => void;
   updateNodeData: (nodeId: string, data: Partial<VisaiNode['data']>) => void;
+  deleteNode: (nodeId: string) => void;
+  startConnection: (fromNodeId: string, fromPosition: { x: number, y: number }) => void;
 }
 
 export default function NodeRenderer({ node, ...props }: NodeRendererProps) {

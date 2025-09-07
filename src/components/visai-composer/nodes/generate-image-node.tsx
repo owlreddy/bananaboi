@@ -12,9 +12,11 @@ interface GenerateImageNodeProps {
   node: VisaiNode;
   onMouseDown: (e: React.MouseEvent) => void;
   updateNodeData: (nodeId: string, data: Partial<VisaiNode['data']>) => void;
+  deleteNode: (nodeId: string) => void;
+  startConnection: (fromNodeId: string, fromPosition: { x: number, y: number }) => void;
 }
 
-export default function GenerateImageNode({ node, onMouseDown, updateNodeData }: GenerateImageNodeProps) {
+export default function GenerateImageNode({ node, onMouseDown, updateNodeData, deleteNode, startConnection }: GenerateImageNodeProps) {
   const { toast } = useToast();
   
   const handleGenerate = async () => {
@@ -42,7 +44,16 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData }:
   };
 
   return (
-    <BaseNode title="Generate Image" Icon={ImageIcon} nodeId={node.id} position={node.position} onMouseDown={onMouseDown}>
+    <BaseNode 
+      title="Generate Image" 
+      Icon={ImageIcon} 
+      nodeId={node.id} 
+      position={node.position} 
+      onMouseDown={onMouseDown} 
+      onDelete={() => deleteNode(node.id)}
+      startConnection={startConnection}
+      hasInput={false}
+    >
       <div className="space-y-3">
         <Textarea
           placeholder="Enter a prompt to generate an image..."

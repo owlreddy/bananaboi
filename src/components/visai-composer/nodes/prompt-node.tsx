@@ -11,9 +11,11 @@ interface PromptNodeProps {
   node: VisaiNode;
   onMouseDown: (e: React.MouseEvent) => void;
   updateNodeData: (nodeId: string, data: Partial<VisaiNode['data']>) => void;
+  deleteNode: (nodeId: string) => void;
+  startConnection: (fromNodeId: string, fromPosition: { x: number, y: number }) => void;
 }
 
-export default function PromptNode({ node, onMouseDown, updateNodeData }: PromptNodeProps) {
+export default function PromptNode({ node, onMouseDown, updateNodeData, deleteNode, startConnection }: PromptNodeProps) {
   const { toast } = useToast();
 
   const handleRefine = async () => {
@@ -44,7 +46,15 @@ export default function PromptNode({ node, onMouseDown, updateNodeData }: Prompt
   };
 
   return (
-    <BaseNode title="AI Prompt Tool" Icon={MessageSquare} nodeId={node.id} position={node.position} onMouseDown={onMouseDown}>
+    <BaseNode 
+      title="AI Prompt Tool" 
+      Icon={MessageSquare} 
+      nodeId={node.id} 
+      position={node.position} 
+      onMouseDown={onMouseDown} 
+      onDelete={() => deleteNode(node.id)}
+      startConnection={startConnection}
+    >
       <div className="space-y-3">
         <Textarea
           placeholder="Initial prompt..."

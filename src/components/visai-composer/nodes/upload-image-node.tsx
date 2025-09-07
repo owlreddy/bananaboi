@@ -10,9 +10,11 @@ interface UploadImageNodeProps {
   node: VisaiNode;
   onMouseDown: (e: React.MouseEvent) => void;
   updateNodeData: (nodeId: string, data: Partial<VisaiNode['data']>) => void;
+  deleteNode: (nodeId: string) => void;
+  startConnection: (fromNodeId: string, fromPosition: { x: number, y: number }) => void;
 }
 
-export default function UploadImageNode({ node, onMouseDown, updateNodeData }: UploadImageNodeProps) {
+export default function UploadImageNode({ node, onMouseDown, updateNodeData, deleteNode, startConnection }: UploadImageNodeProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -40,7 +42,16 @@ export default function UploadImageNode({ node, onMouseDown, updateNodeData }: U
   };
 
   return (
-    <BaseNode title="Upload Image" Icon={Upload} nodeId={node.id} position={node.position} onMouseDown={onMouseDown}>
+    <BaseNode 
+      title="Upload Image" 
+      Icon={Upload} 
+      nodeId={node.id} 
+      position={node.position} 
+      onMouseDown={onMouseDown} 
+      onDelete={() => deleteNode(node.id)}
+      startConnection={startConnection}
+      hasInput={false}
+    >
       <input
         type="file"
         ref={fileInputRef}

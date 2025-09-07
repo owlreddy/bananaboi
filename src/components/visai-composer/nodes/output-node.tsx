@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Combine, Download, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from '@/components/ui/textarea';
+import { intelligentImageBlending } from '@/ai/flows/intelligent-image-blending';
+
 
 interface OutputNodeProps {
   node: VisaiNode;
@@ -12,9 +15,10 @@ interface OutputNodeProps {
   connections: Connection[];
   onMouseDown: (e: React.MouseEvent) => void;
   updateNodeData: (nodeId: string, data: Partial<VisaiNode['data']>) => void;
+  deleteNode: (nodeId: string) => void;
 }
 
-export default function OutputNode({ node, nodes, connections, onMouseDown, updateNodeData }: OutputNodeProps) {
+export default function OutputNode({ node, nodes, connections, onMouseDown, updateNodeData, deleteNode }: OutputNodeProps) {
   const { toast } = useToast();
   
   const handleDownload = () => {
@@ -30,22 +34,65 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
     document.body.removeChild(link);
   };
   
-  // Placeholder for blend functionality
   const handleBlend = async () => {
-    toast({
-      title: "Coming Soon!",
-      description: "Image blending functionality is not yet implemented.",
-    });
-  }
+    const inputConnections = connections.filter(c => c.toNodeId === node.id);
+    const imageNodes = inputConnections
+      .map(c => nodes.find(n => n.id === c.fromNodeId))
+      .filter(n => n && n.data.imageDataUri && n.data.prompt);
+
+    if (imageNodes.length < 2) {
+      toast({
+        title: "Not enough inputs",
+        description: "Connect at least two image nodes to blend.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    updateNodeData(node.id, { isProcessing: true });
+    try {
+      const result = await intelligentImageBlending({
+        imageNodes: imageNodes.map(n => ({
+          imageDataUri: n!.data.imageDataUri!,
+          prompt: n!.data.prompt!
+        })),
+        blendingInstructions: node.data.blendingInstructions || "Blend the images together seamlessly."
+      });
+      
+      updateNodeData(node.id, { imageDataUri: result.compositeImage, isProcessing: false });
+    } catch (error) {
+       console.error("Image blending failed:", error);
+      toast({
+        title: "Blending Failed",
+        description: "Could not blend images. Please try again.",
+        variant: "destructive",
+      });
+      updateNodeData(node.id, { isProcessing: false });
+    }
+  };
 
   return (
-    <BaseNode title="Output" Icon={Combine} nodeId={node.id} position={node.position} onMouseDown={onMouseDown}>
+    <BaseNode 
+      title="Output" 
+      Icon={Combine} 
+      nodeId={node.id} 
+      position={node.position} 
+      onMouseDown={onMouseDown} 
+      onDelete={() => deleteNode(node.id)}
+      hasOutput={false}
+    >
       <div className="space-y-3">
+        <Textarea
+            placeholder="Blending instructions..."
+            value={node.data.blendingInstructions || ''}
+            onChange={(e) => updateNodeData(node.id, { blendingInstructions: e.target.value })}
+            className="h-24"
+          />
          <Button onClick={handleBlend} disabled={node.data.isProcessing} className="w-full">
           {node.data.isProcessing ? (
             <Loader2 className="animate-spin" />
           ) : (
-            'Blend Inputs (Coming Soon)'
+            'Blend Inputs'
           )}
         </Button>
 
