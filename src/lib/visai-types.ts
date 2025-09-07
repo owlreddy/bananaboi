@@ -1,4 +1,4 @@
-export type NodeType = 'generate' | 'upload' | 'prompt' | 'output';
+export type NodeType = 'generate' | 'upload' | 'output';
 
 export interface NodeData {
   prompt?: string;

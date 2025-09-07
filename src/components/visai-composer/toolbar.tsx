@@ -1,6 +1,6 @@
 import type { NodeType } from '@/lib/visai-types';
 import { Button } from '@/components/ui/button';
-import { Image, Upload, MessageSquare, Combine } from 'lucide-react';
+import { Image, Upload, Combine } from 'lucide-react';
 
 interface ToolbarProps {
   onAddNode: (type: NodeType) => void;
@@ -9,7 +9,6 @@ interface ToolbarProps {
 const nodeTypes = [
   { type: 'generate', label: 'Generate Image', icon: Image },
   { type: 'upload', label: 'Upload Image', icon: Upload },
-  { type: 'prompt', label: 'AI Prompt', icon: MessageSquare },
   { type: 'output', label: 'Output Node', icon: Combine },
 ] as const;
 

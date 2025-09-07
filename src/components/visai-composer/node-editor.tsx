@@ -8,10 +8,29 @@ import ConnectionRenderer from './connection-renderer';
 import { produce } from 'immer';
 import { useToast } from "@/hooks/use-toast";
 
+const generatePrompts = [
+  'A mystical forest at twilight',
+  'A futuristic cityscape on a distant planet',
+  'An abstract painting representing the sound of jazz',
+  'A lone astronaut discovering a glowing alien artifact',
+  'A steampunk-inspired mechanical owl with intricate gears',
+];
+
+const blendInstructions = [
+  'Blend the two images seamlessly.',
+  'Combine the images in a surreal, dreamlike collage.',
+  'Use the style of the first image and the subject of the second.',
+  'Merge the inputs into a single, cohesive cyberpunk scene.',
+  'Create a high-contrast, black and white composition from the inputs.',
+];
+
+const getRandomItem = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
+
 const INITIAL_NODES: VisaiNode[] = [
-  { id: '1', type: 'generate', position: { x: 100, y: 150 }, data: { prompt: 'A mystical forest at twilight' } },
-  { id: '2', type: 'upload', position: { x: 100, y: 400 }, data: {} },
-  { id: '3', type: 'output', position: { x: 600, y: 275 }, data: { blendingInstructions: 'Blend the two images seamlessly.' } },
+  { id: '1', type: 'generate', position: { x: 300, y: 250 }, data: { prompt: getRandomItem(generatePrompts) } },
+  { id: '2', type: 'upload', position: { x: 300, y: 500 }, data: {} },
+  { id: '3', type: 'output', position: { x: 800, y: 375 }, data: { blendingInstructions: getRandomItem(blendInstructions) } },
 ];
 
 export default function NodeEditor() {
@@ -35,17 +54,25 @@ export default function NodeEditor() {
     }));
   }, []);
 
-  const addNode = useCallback(() => {
+  const addNode = useCallback((type: NodeType) => {
+    // Get the center of the current view
+    if (!editorRef.current) return;
+    const rect = editorRef.current.getBoundingClientRect();
+    const viewCenterX = (rect.width / 2 - viewTransform.x) / viewTransform.scale;
+    const viewCenterY = (rect.height / 2 - viewTransform.y) / viewTransform.scale;
+
+
     const newNode: VisaiNode = {
       id: Date.now().toString(),
-      type: 'generate',
-      position: { x: 250, y: 150 },
-      data: { prompt: 'New prompt' },
+      type: type,
+      position: { x: viewCenterX, y: viewCenterY },
+      data: type === 'generate' ? { prompt: getRandomItem(generatePrompts) } : 
+            type === 'output' ? { blendingInstructions: getRandomItem(blendInstructions) } : {},
     };
     setNodes(produce(draft => {
       draft.push(newNode);
     }));
-  }, []);
+  }, [viewTransform]);
 
   const deleteNode = useCallback((nodeId: string) => {
     setNodes(prev => prev.filter(n => n.id !== nodeId));
@@ -172,6 +199,15 @@ export default function NodeEditor() {
   const getNodePosition = (nodeId: string) => {
     return nodes.find(n => n.id === nodeId)?.position || { x: 0, y: 0 };
   }
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const rect = editorRef.current.getBoundingClientRect();
+      const initialX = (rect.width - 800 * 1) / 2; // Center the group horizontally
+      const initialY = (rect.height - 600 * 1) / 2; // Center the group vertically
+      setViewTransform(v => ({...v, x: initialX, y: initialY}));
+    }
+  }, []);
 
   return (
     <div 

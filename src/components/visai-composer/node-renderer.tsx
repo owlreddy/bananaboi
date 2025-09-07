@@ -1,7 +1,6 @@
 import type { VisaiNode, Connection } from '@/lib/visai-types';
 import GenerateImageNode from './nodes/generate-image-node';
 import UploadImageNode from './nodes/upload-image-node';
-import PromptNode from './nodes/prompt-node';
 import OutputNode from './nodes/output-node';
 
 interface NodeRendererProps {
@@ -21,8 +20,6 @@ export default function NodeRenderer({ node, ...props }: NodeRendererProps) {
       return <GenerateImageNode {...nodeProps} />;
     case 'upload':
       return <UploadImageNode {...nodeProps} />;
-    case 'prompt':
-      return <PromptNode {...nodeProps} />;
     case 'output':
       return <OutputNode {...nodeProps} />;
     default:
