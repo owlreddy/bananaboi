@@ -56,7 +56,7 @@ export default function BaseNode({
         left: position.x,
         top: position.y,
         transform: 'translate(-50%, -50%)',
-        zIndex: 1,
+        zIndex: 20,
       }}
     >
       <Card className={cn("bg-card shadow-lg border border-border rounded-lg relative", className)}>
