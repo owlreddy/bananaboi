@@ -19,7 +19,6 @@ export default function ConnectionRenderer({
     const pos = getNodePosition(nodeId);
     // These offsets should match the BaseNode component's handle positions
     const NODE_WIDTH = 320; // Corresponds to w-80
-    const NODE_HEIGHT = 100; // A rough estimate
     
     if (handle === 'input') {
       return { x: pos.x - NODE_WIDTH / 2, y: pos.y };
@@ -39,7 +38,7 @@ export default function ConnectionRenderer({
       })}
       {drawingConnection && (
         <path
-          d={`M${drawingConnection.fromPosition.x},${drawingConnection.fromPosition.y} L${mousePosition.x},${mousePosition.y}`}
+          d={`M${drawingConnection.fromPosition.x},${drawingConnection.fromPosition.y} C${drawingConnection.fromPosition.x + 50},${drawingConnection.fromPosition.y} ${mousePosition.x - 50},${mousePosition.y} ${mousePosition.x},${mousePosition.y}`}
           stroke="hsl(var(--primary))"
           strokeWidth="2"
           fill="none"
