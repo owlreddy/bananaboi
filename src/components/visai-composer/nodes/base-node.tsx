@@ -33,15 +33,19 @@ export default function BaseNode({
   hasOutput = true,
 }: BaseNodeProps) {
   const outputRef = useRef<HTMLDivElement>(null);
+  const nodeRef = useRef<HTMLDivElement>(null);
   
   const handleStartConnection = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (startConnection && outputRef.current) {
-      const rect = outputRef.current.getBoundingClientRect();
-      const editorRect = (e.currentTarget as HTMLElement).closest('.relative.overflow-hidden')!.getBoundingClientRect();
+    if (startConnection && outputRef.current && nodeRef.current) {
+      const nodePos = {
+        x: nodeRef.current.offsetLeft + nodeRef.current.offsetWidth / 2,
+        y: nodeRef.current.offsetTop + nodeRef.current.offsetHeight / 2,
+      };
+
       const fromPosition = {
-        x: (rect.left - editorRect.left) + rect.width / 2,
-        y: (rect.top - editorRect.top) + rect.height / 2,
+        x: nodePos.x + nodeRef.current.offsetWidth / 2,
+        y: nodePos.y,
       };
       startConnection(nodeId, fromPosition);
     }
@@ -49,6 +53,7 @@ export default function BaseNode({
 
   return (
     <div
+      ref={nodeRef}
       id={`node-${nodeId}`}
       data-node-id={nodeId}
       className="absolute w-80"
@@ -59,7 +64,7 @@ export default function BaseNode({
         zIndex: 20,
       }}
     >
-      <Card className={cn("bg-card shadow-lg border border-border rounded-lg relative", className)}>
+      <Card className={cn("bg-card shadow-lg border border-border rounded-lg relative cursor-default", className)}>
         {hasInput && (
           <div className="absolute top-1/2 -left-2.5 -translate-y-1/2 w-5 h-5 bg-primary rounded-full border-2 border-card" />
         )}
@@ -72,7 +77,7 @@ export default function BaseNode({
         )}
         <CardHeader
           onMouseDown={onMouseDown}
-          className="flex flex-row items-center justify-between space-y-0 p-3 cursor-move bg-muted/50 rounded-t-lg"
+          className="flex flex-row items-center justify-between space-y-0 p-3 cursor-grab active:cursor-grabbing bg-muted/50 rounded-t-lg"
         >
           <div className="flex items-center">
             <Icon className="w-5 h-5 mr-2 text-primary" />

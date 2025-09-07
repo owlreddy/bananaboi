@@ -19,6 +19,7 @@ export default function ConnectionRenderer({
     const pos = getNodePosition(nodeId);
     // These offsets should match the BaseNode component's handle positions
     const NODE_WIDTH = 320; // Corresponds to w-80
+    const NODE_HEIGHT = 100; // A rough estimate
     
     if (handle === 'input') {
       return { x: pos.x - NODE_WIDTH / 2, y: pos.y };
@@ -28,7 +29,7 @@ export default function ConnectionRenderer({
   };
 
   return (
-    <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+    <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: 0, overflow: 'visible' }}>
       {connections.map(conn => {
         const fromPos = getHandlePosition(conn.fromNodeId, 'output');
         const toPos = getHandlePosition(conn.toNodeId, 'input');
