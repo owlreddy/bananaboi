@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 interface UploadImageNodeProps {
   node: VisaiNode;
@@ -65,9 +66,16 @@ export default function UploadImageNode({ node, onMouseDown, updateNodeData, del
           Choose an image
         </Button>
         {node.data.imageDataUri && (
-          <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border">
-            <Image src={node.data.imageDataUri} alt="Uploaded image" layout="fill" objectFit="cover" data-ai-hint="uploaded background"/>
-          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in">
+                <Image src={node.data.imageDataUri} alt="Uploaded image" layout="fill" objectFit="cover" data-ai-hint="uploaded background"/>
+              </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl h-auto p-2">
+              <Image src={node.data.imageDataUri} alt="Uploaded image" width={1024} height={1024} className="rounded-md w-full h-auto" />
+            </DialogContent>
+          </Dialog>
         )}
       </div>
     </BaseNode>

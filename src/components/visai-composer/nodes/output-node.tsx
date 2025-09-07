@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from '@/components/ui/textarea';
 import { intelligentImageBlending } from '@/ai/flows/intelligent-image-blending';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 
 interface OutputNodeProps {
@@ -38,12 +39,13 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
     const inputConnections = connections.filter(c => c.toNodeId === node.id);
     const imageNodes = inputConnections
       .map(c => nodes.find(n => n.id === c.fromNodeId))
-      .filter(n => n && n.data.imageDataUri && n.data.prompt);
+      .filter((n): n is VisaiNode => !!(n && n.data.imageDataUri));
 
-    if (imageNodes.length < 2) {
+
+    if (imageNodes.length < 1) {
       toast({
         title: "Not enough inputs",
-        description: "Connect at least two image nodes to blend.",
+        description: "Connect at least one image node to blend.",
         variant: "destructive",
       });
       return;
@@ -54,7 +56,7 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
       const result = await intelligentImageBlending({
         imageNodes: imageNodes.map(n => ({
           imageDataUri: n!.data.imageDataUri!,
-          prompt: n!.data.prompt!
+          prompt: n!.data.prompt! || 'user uploaded image'
         })),
         blendingInstructions: node.data.blendingInstructions || "Blend the images together seamlessly."
       });
@@ -97,9 +99,16 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
         </Button>
 
         {node.data.imageDataUri && (
-          <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border">
-            <Image src={node.data.imageDataUri} alt="Composite image" layout="fill" objectFit="cover" data-ai-hint="composite abstract"/>
-          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in">
+                <Image src={node.data.imageDataUri} alt="Composite image" layout="fill" objectFit="cover" data-ai-hint="composite abstract"/>
+              </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl h-auto p-2">
+              <Image src={node.data.imageDataUri} alt="Composite image" width={1024} height={1024} className="rounded-md w-full h-auto" />
+            </DialogContent>
+          </Dialog>
         )}
 
         <Button onClick={handleDownload} variant="outline" className="w-full" disabled={!node.data.imageDataUri}>

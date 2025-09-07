@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { generateInitialImageNode } from '@/ai/flows/generate-initial-image-node';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 interface GenerateImageNodeProps {
   node: VisaiNode;
@@ -69,9 +70,16 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
           )}
         </Button>
         {node.data.imageDataUri && (
-          <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border">
-            <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} layout="fill" objectFit="cover" data-ai-hint="generated art" />
-          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in">
+                <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} layout="fill" objectFit="cover" data-ai-hint="generated art" />
+              </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl h-auto p-2">
+                <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} width={1024} height={1024} className="rounded-md w-full h-auto" />
+            </DialogContent>
+          </Dialog>
         )}
       </div>
     </BaseNode>
