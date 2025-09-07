@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import type {Part} from 'genkit';
 
 const IntelligentImageBlendingInputSchema = z.object({
   imageNodes: z
@@ -51,32 +52,6 @@ export async function intelligentImageBlending(
   return intelligentImageBlendingFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'intelligentImageBlendingPrompt',
-  input: {schema: IntelligentImageBlendingInputSchema},
-  output: {schema: IntelligentImageBlendingOutputSchema},
-  prompt: `You are an AI expert in blending images to create a cohesive composite.
-
-You are provided with multiple images, their associated prompts, and blending instructions.
-
-Images:
-{{#each imageNodes}}
-  Image {{@index}} Prompt: {{{this.prompt}}}
-  {{media url=this.imageDataUri}}
-{{/each}}
-
-Blending Instructions: {{{blendingInstructions}}}
-
-Based on the content of the images, their prompts, and the blending instructions, create a single composite image that seamlessly blends the provided images.
-
-Ensure that the composite image is coherent and visually appealing.
-
-Return the blended composite image as a data URI.
-
-IMPORTANT: You must respond with a base64 encoded data URI representing the composite image.
-`,
-});
-
 const intelligentImageBlendingFlow = ai.defineFlow(
   {
     name: 'intelligentImageBlendingFlow',
@@ -84,7 +59,33 @@ const intelligentImageBlendingFlow = ai.defineFlow(
     outputSchema: IntelligentImageBlendingOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    const promptParts: Part[] = [];
+
+    // Add all the images first
+    for (const imageNode of input.imageNodes) {
+      promptParts.push({media: {url: imageNode.imageDataUri}});
+    }
+
+    // Then add the blending instructions
+    promptParts.push({text: input.blendingInstructions});
+    
+    // Add the prompts from the individual images as context
+    input.imageNodes.forEach((node, index) => {
+      promptParts.push({text: `Context for image ${index}: ${node.prompt}`});
+    });
+
+    const {media} = await ai.generate({
+      model: 'googleai/gemini-2.5-flash-image-preview',
+      prompt: promptParts,
+      config: {
+        responseModalities: ['IMAGE'],
+      },
+    });
+
+    if (!media) {
+      throw new Error('No composite image was generated.');
+    }
+
+    return {compositeImage: media.url!};
   }
 );
