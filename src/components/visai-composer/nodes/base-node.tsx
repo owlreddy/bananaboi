@@ -38,14 +38,9 @@ export default function BaseNode({
   const handleStartConnection = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (startConnection && outputRef.current && nodeRef.current) {
-      const nodePos = {
-        x: nodeRef.current.offsetLeft + nodeRef.current.offsetWidth / 2,
-        y: nodeRef.current.offsetTop + nodeRef.current.offsetHeight / 2,
-      };
-
       const fromPosition = {
-        x: nodePos.x + nodeRef.current.offsetWidth / 2,
-        y: nodePos.y,
+        x: position.x + nodeRef.current.offsetWidth / 2,
+        y: position.y,
       };
       startConnection(nodeId, fromPosition);
     }
