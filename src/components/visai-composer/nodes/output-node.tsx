@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import type { VisaiNode, Connection } from '@/lib/visai-types';
 import BaseNode from './base-node';
@@ -54,7 +55,8 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
     setIsDirty(hasChanged || removedConnection);
   }, [nodes, connections, node.data.imageDataUri, node.data.inputStates, node.id]);
   
-  const handleDownload = () => {
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!node.data.imageDataUri) {
         toast({ title: "No image to download", variant: "destructive" });
         return;
@@ -125,16 +127,28 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
       <div className="space-y-3">
         {node.data.imageDataUri && (
           <div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in group">
-                  <Image src={node.data.imageDataUri} alt="Composite image" layout="fill" objectFit="cover" data-ai-hint="composite abstract"/>
-                </div>
-              </DialogTrigger>
-              <DialogContent className="max-w-3xl h-auto p-2">
-                <Image src={node.data.imageDataUri} alt="Composite image" width={1024} height={1024} className="rounded-md w-full h-auto" />
-              </DialogContent>
-            </Dialog>
+            <div className="relative group">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in group">
+                    <Image src={node.data.imageDataUri} alt="Composite image" layout="fill" objectFit="cover" data-ai-hint="composite abstract"/>
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl h-auto p-2">
+                  <Image src={node.data.imageDataUri} alt="Composite image" width={1024} height={1024} className="rounded-md w-full h-auto" />
+                </DialogContent>
+              </Dialog>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={handleDownload}
+                aria-label="Download image"
+                disabled={isDirty}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+            </div>
             {isDirty && (
               <div className="mt-2 text-xs text-center text-amber-600 flex items-center justify-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
@@ -172,13 +186,6 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
                     Modify
                 </Button>
             )
-        )}
-
-        {node.data.imageDataUri && (
-          <Button onClick={handleDownload} variant="outline" className="w-full" disabled={isDirty}>
-            <Download className="mr-2 h-4 w-4" />
-            Download Image
-          </Button>
         )}
       </div>
     </BaseNode>

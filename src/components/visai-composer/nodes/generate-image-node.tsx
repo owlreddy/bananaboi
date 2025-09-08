@@ -5,7 +5,7 @@ import BaseNode from './base-node';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
-import { Image as ImageIcon, Loader2, Edit, Shuffle } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Edit, Shuffle, Download } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { generateInitialImageNode } from '@/ai/flows/generate-initial-image-node';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -80,6 +80,21 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
   const handleRandomize = () => {
     updateNodeData(node.id, { prompt: getRandomItem(generatePrompts) });
   };
+  
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!node.data.imageDataUri) {
+        toast({ title: "No image to download", variant: "destructive" });
+        return;
+    }
+    const link = document.createElement('a');
+    link.href = node.data.imageDataUri;
+    link.download = `visai-generated-${node.id}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   return (
     <BaseNode 
@@ -94,16 +109,27 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
     >
       <div className="space-y-3">
         {node.data.imageDataUri && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in">
-                <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} layout="fill" objectFit="cover" data-ai-hint="generated art" />
-              </div>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl h-auto p-2">
-                <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} width={1024} height={1024} className="rounded-md w-full h-auto" />
-            </DialogContent>
-          </Dialog>
+           <div className="relative group">
+            <Dialog>
+              <DialogTrigger asChild>
+                <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in">
+                  <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} layout="fill" objectFit="cover" data-ai-hint="generated art" />
+                </div>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl h-auto p-2">
+                  <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} width={1024} height={1024} className="rounded-md w-full h-auto" />
+              </DialogContent>
+            </Dialog>
+            <Button
+              variant="secondary"
+              size="icon"
+              className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={handleDownload}
+              aria-label="Download image"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
         )}
 
         {isEditing ? (
