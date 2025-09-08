@@ -10,11 +10,28 @@ import { produce } from 'immer';
 import { useToast } from "@/hooks/use-toast";
 
 const generatePrompts = [
-  'A mystical forest at twilight',
-  'A futuristic cityscape on a distant planet',
-  'An abstract painting representing the sound of jazz',
-  'A lone astronaut discovering a glowing alien artifact',
-  'A steampunk-inspired mechanical owl with intricate gears',
+  'A majestic lion with a nebula for a mane, standing on a cliff overlooking a galaxy.',
+  'A serene Japanese zen garden on a floating island in the sky, with cherry blossoms drifting in the wind.',
+  'An ancient, moss-covered library inside a giant, hollowed-out tree.',
+  'A bustling cyberpunk market street at night, with neon signs reflected in the rain-soaked pavement.',
+  'A crystal-clear underwater city inhabited by bioluminescent creatures.',
+  'A portrait of a wise old wizard, his beard made of swirling stardust.',
+  'A whimsical treehouse village connected by rope bridges, nestled in a redwood forest.',
+  'An Art Deco-style robot butler serving tea in a luxurious, futuristic lounge.',
+  'A dragon made entirely of stained glass, perched atop a Gothic cathedral.',
+  'A lone astronaut playing a guitar on the surface of Mars, with Earth visible in the sky.',
+  'A surreal landscape where the ground is a giant chessboard and the sky is filled with floating clocks.',
+  'A secret garden at midnight, where all the flowers glow with a soft, magical light.',
+  'A steampunk airship navigating through a storm of colorful, swirling clouds.',
+  'An enchanted waterfall that flows upwards into the sky.',
+  'A cozy, cluttered artist studio on a rainy day, filled with half-finished canvases.',
+  'A miniature world inside a snow globe, with tiny people going about their day.',
+  'A warrior queen riding a giant, armored polar bear into battle.',
+  'A futuristic high-speed train weaving through a mountain range made of giant crystals.',
+  'A village of mushroom houses lit from within, deep in a fantasy forest.',
+  'An elegant ballroom dance between a ghost and a vampire.',
+  'A colossal, ancient turtle carrying an entire ecosystem on its back.',
+  'A quiet coffee shop in Paris, but the patrons are all famous painters from different eras.',
 ];
 
 const blendInstructions = [
