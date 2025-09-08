@@ -8,6 +8,7 @@ import NodeRenderer from './node-renderer';
 import ConnectionRenderer from './connection-renderer';
 import { produce } from 'immer';
 import { useToast } from "@/hooks/use-toast";
+import { cn } from '@/lib/utils';
 
 const generatePrompts = [
   'A majestic lion with a nebula for a mane, standing on a cliff overlooking a galaxy.',
@@ -248,7 +249,10 @@ export default function NodeEditor() {
   return (
     <div 
       ref={editorRef} 
-      className="w-full h-full relative overflow-hidden bg-dots cursor-grab"
+      className={cn(
+        "w-full h-full relative overflow-hidden bg-dots cursor-grab",
+        (draggingNodeId || drawingConnection || isPanning) && "select-none"
+      )}
       onMouseDown={handleEditorMouseDown}
       onWheel={handleWheel}
       onContextMenu={(e) => e.preventDefault()} // Prevent context menu on right click pan
