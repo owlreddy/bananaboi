@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { VisaiNode, Connection } from '@/lib/visai-types';
 import BaseNode from './base-node';
 import { Button } from '@/components/ui/button';
-import { Combine, Download, Loader2, Edit, RefreshCw } from 'lucide-react';
+import { Combine, Download, Loader2, Edit, RefreshCw, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from '@/components/ui/textarea';
@@ -124,24 +124,24 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
     >
       <div className="space-y-3">
         {node.data.imageDataUri && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in group">
-                <Image src={node.data.imageDataUri} alt="Composite image" layout="fill" objectFit="cover" data-ai-hint="composite abstract"/>
-                {isDirty && (
-                    <div className="absolute inset-0 bg-background/70 flex items-center justify-center">
-                        <div className="text-foreground font-semibold flex items-center gap-2 bg-card/80 px-3 py-1 rounded-full border border-border">
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                            <span>Inputs Changed</span>
-                        </div>
-                    </div>
-                )}
+          <div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in group">
+                  <Image src={node.data.imageDataUri} alt="Composite image" layout="fill" objectFit="cover" data-ai-hint="composite abstract"/>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl h-auto p-2">
+                <Image src={node.data.imageDataUri} alt="Composite image" width={1024} height={1024} className="rounded-md w-full h-auto" />
+              </DialogContent>
+            </Dialog>
+            {isDirty && (
+              <div className="mt-2 text-xs text-center text-amber-600 flex items-center justify-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                <span>Inputs have changed.</span>
               </div>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl h-auto p-2">
-              <Image src={node.data.imageDataUri} alt="Composite image" width={1024} height={1024} className="rounded-md w-full h-auto" />
-            </DialogContent>
-          </Dialog>
+            )}
+          </div>
         )}
 
         {isEditing ? (
