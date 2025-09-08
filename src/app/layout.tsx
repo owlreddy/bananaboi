@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'VisAI Composer',
+  title: 'Banana Boi',
   description: 'A node-based editor for AI image generation.',
 };
 
