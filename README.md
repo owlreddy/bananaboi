@@ -28,7 +28,8 @@ This has been made for the hackathon https://www.kaggle.com/competitions/banana/
 
 ## Attached Video Demo
 
-[**Insert Link to Your Public Video Demo Here**]
+[[**Video Demo**]
+](https://studio--bananaboi.us-central1.hosted.app/)
 
 *A brief walkthrough of Banana Boi, showcasing the creation of an image from scratch, blending it with an uploaded image, and applying several iterative edits to achieve a final composite piece.*
 
