@@ -1,5 +1,5 @@
-import Header from '@/components/visai-composer/header';
-import NodeEditor from '@/components/visai-composer/node-editor';
+import Header from '@/components/banana-boi/header';
+import NodeEditor from '@/components/banana-boi/node-editor';
 
 export default function Home() {
   return (
