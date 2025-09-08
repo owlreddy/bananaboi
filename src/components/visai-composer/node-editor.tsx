@@ -144,9 +144,7 @@ export default function NodeEditor() {
   };
   
   const handleEditorMouseDown = (e: React.MouseEvent) => {
-    // Middle or Right click for panning
-    if (e.button === 1 || e.button === 2) {
-      e.preventDefault();
+    if (e.button === 0) { // Primary (left) mouse button
       setIsPanning(true);
     }
   };
