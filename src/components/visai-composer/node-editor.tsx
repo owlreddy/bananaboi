@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
@@ -24,17 +25,16 @@ const blendInstructions = [
   'Create a high-contrast, black and white composition from the inputs.',
 ];
 
-const getRandomItem = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+export const getRandomItem = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-
-const INITIAL_NODES: VisaiNode[] = [
+const getInitialNodes = (): VisaiNode[] => [
   { id: '1', type: 'generate', position: { x: 300, y: 250 }, data: { prompt: getRandomItem(generatePrompts) } },
   { id: '2', type: 'upload', position: { x: 300, y: 500 }, data: {} },
   { id: '3', type: 'output', position: { x: 800, y: 375 }, data: { blendingInstructions: getRandomItem(blendInstructions) } },
 ];
 
 export default function NodeEditor() {
-  const [nodes, setNodes] = useState<VisaiNode[]>(INITIAL_NODES);
+  const [nodes, setNodes] = useState<VisaiNode[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [drawingConnection, setDrawingConnection] = useState<{ fromNodeId: string; fromPosition: { x: number; y: number } } | null>(null);
@@ -44,6 +44,10 @@ export default function NodeEditor() {
   
   const editorRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setNodes(getInitialNodes());
+  }, []);
 
   const updateNodeData = useCallback((nodeId: string, data: Partial<VisaiNode['data']>) => {
     setNodes(produce(draft => {

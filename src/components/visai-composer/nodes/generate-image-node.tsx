@@ -1,13 +1,23 @@
+
 import React, { useState, useEffect } from 'react';
 import type { VisaiNode } from '@/lib/visai-types';
 import BaseNode from './base-node';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
-import { Image as ImageIcon, Loader2, Edit } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Edit, Shuffle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { generateInitialImageNode } from '@/ai/flows/generate-initial-image-node';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { getRandomItem } from '../node-editor';
+
+const generatePrompts = [
+  'A mystical forest at twilight',
+  'A futuristic cityscape on a distant planet',
+  'An abstract painting representing the sound of jazz',
+  'A lone astronaut discovering a glowing alien artifact',
+  'A steampunk-inspired mechanical owl with intricate gears',
+];
 
 interface GenerateImageNodeProps {
   node: VisaiNode;
@@ -50,6 +60,10 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
     }
   };
 
+  const handleRandomize = () => {
+    updateNodeData(node.id, { prompt: getRandomItem(generatePrompts) });
+  };
+
   return (
     <BaseNode 
       title="Generate Image" 
@@ -83,13 +97,18 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
               onChange={(e) => updateNodeData(node.id, { prompt: e.target.value })}
               className="text-sm"
             />
-            <Button onClick={handleGenerate} disabled={node.data.isProcessing} className="w-full">
-              {node.data.isProcessing ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                'Generate'
-              )}
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleGenerate} disabled={node.data.isProcessing} className="w-full">
+                {node.data.isProcessing ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  'Generate'
+                )}
+              </Button>
+              <Button onClick={handleRandomize} variant="outline" size="icon" aria-label="Randomize prompt">
+                <Shuffle className="w-4 h-4" />
+              </Button>
+            </div>
           </>
         ) : (
           <Button onClick={() => setIsEditing(true)} variant="outline" className="w-full">
