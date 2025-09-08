@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { VisaiNode } from '@/lib/visai-types';
 import BaseNode from './base-node';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
-import { Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Edit } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { generateInitialImageNode } from '@/ai/flows/generate-initial-image-node';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -19,6 +19,12 @@ interface GenerateImageNodeProps {
 
 export default function GenerateImageNode({ node, onMouseDown, updateNodeData, deleteNode, startConnection }: GenerateImageNodeProps) {
   const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(!node.data.imageDataUri);
+
+  useEffect(() => {
+    // If an image is generated or removed, update the editing state
+    setIsEditing(!node.data.imageDataUri);
+  }, [node.data.imageDataUri]);
   
   const handleGenerate = async () => {
     if (!node.data.prompt) {
@@ -56,19 +62,6 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
       hasInput={false}
     >
       <div className="space-y-3">
-        <Textarea
-          placeholder="Enter a prompt to generate an image..."
-          value={node.data.prompt || ''}
-          onChange={(e) => updateNodeData(node.id, { prompt: e.target.value })}
-          className="text-sm"
-        />
-        <Button onClick={handleGenerate} disabled={node.data.isProcessing} className="w-full">
-          {node.data.isProcessing ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            'Generate'
-          )}
-        </Button>
         {node.data.imageDataUri && (
           <Dialog>
             <DialogTrigger asChild>
@@ -80,6 +73,29 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
                 <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} width={1024} height={1024} className="rounded-md w-full h-auto" />
             </DialogContent>
           </Dialog>
+        )}
+
+        {isEditing ? (
+          <>
+            <Textarea
+              placeholder="Enter a prompt to generate an image..."
+              value={node.data.prompt || ''}
+              onChange={(e) => updateNodeData(node.id, { prompt: e.target.value })}
+              className="text-sm"
+            />
+            <Button onClick={handleGenerate} disabled={node.data.isProcessing} className="w-full">
+              {node.data.isProcessing ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                'Generate'
+              )}
+            </Button>
+          </>
+        ) : (
+          <Button onClick={() => setIsEditing(true)} variant="outline" className="w-full">
+            <Edit className="mr-2 h-4 w-4" />
+            Modify
+          </Button>
         )}
       </div>
     </BaseNode>

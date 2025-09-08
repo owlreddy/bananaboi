@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { VisaiNode, Connection } from '@/lib/visai-types';
 import BaseNode from './base-node';
 import { Button } from '@/components/ui/button';
-import { Combine, Download, Loader2 } from 'lucide-react';
+import { Combine, Download, Loader2, Edit } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +21,11 @@ interface OutputNodeProps {
 
 export default function OutputNode({ node, nodes, connections, onMouseDown, updateNodeData, deleteNode }: OutputNodeProps) {
   const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(!node.data.imageDataUri);
+
+  useEffect(() => {
+    setIsEditing(!node.data.imageDataUri);
+  }, [node.data.imageDataUri]);
   
   const handleDownload = () => {
     if (!node.data.imageDataUri) {
@@ -84,20 +89,6 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
       hasOutput={false}
     >
       <div className="space-y-3">
-        <Textarea
-            placeholder="Blending instructions..."
-            value={node.data.blendingInstructions || ''}
-            onChange={(e) => updateNodeData(node.id, { blendingInstructions: e.target.value })}
-            className="h-24"
-          />
-         <Button onClick={handleBlend} disabled={node.data.isProcessing} className="w-full">
-          {node.data.isProcessing ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            'Blend Inputs'
-          )}
-        </Button>
-
         {node.data.imageDataUri && (
           <Dialog>
             <DialogTrigger asChild>
@@ -111,10 +102,35 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
           </Dialog>
         )}
 
-        <Button onClick={handleDownload} variant="outline" className="w-full" disabled={!node.data.imageDataUri}>
-          <Download className="mr-2 h-4 w-4" />
-          Download Image
-        </Button>
+        {isEditing ? (
+            <>
+              <Textarea
+                  placeholder="Blending instructions..."
+                  value={node.data.blendingInstructions || ''}
+                  onChange={(e) => updateNodeData(node.id, { blendingInstructions: e.target.value })}
+                  className="h-24"
+                />
+              <Button onClick={handleBlend} disabled={node.data.isProcessing} className="w-full">
+                {node.data.isProcessing ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  'Blend Inputs'
+                )}
+              </Button>
+            </>
+        ) : (
+            <Button onClick={() => setIsEditing(true)} variant="outline" className="w-full">
+                <Edit className="mr-2 h-4 w-4" />
+                Modify
+            </Button>
+        )}
+
+        {node.data.imageDataUri && (
+          <Button onClick={handleDownload} variant="outline" className="w-full">
+            <Download className="mr-2 h-4 w-4" />
+            Download Image
+          </Button>
+        )}
       </div>
     </BaseNode>
   );
