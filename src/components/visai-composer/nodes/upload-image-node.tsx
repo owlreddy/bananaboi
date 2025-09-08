@@ -65,6 +65,7 @@ function EditImageDialog({
             placeholder="e.g. make it a watercolor painting..."
             value={editPrompt}
             onChange={e => setEditPrompt(e.target.value)}
+            onMouseDown={(e) => e.stopPropagation()}
           />
         </div>
         <DialogFooter>

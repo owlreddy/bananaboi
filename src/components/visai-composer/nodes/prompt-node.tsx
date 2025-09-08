@@ -60,11 +60,13 @@ export default function PromptNode({ node, onMouseDown, updateNodeData, deleteNo
           placeholder="Initial prompt..."
           value={node.data.prompt || ''}
           onChange={(e) => updateNodeData(node.id, { prompt: e.target.value })}
+          onMouseDown={(e) => e.stopPropagation()}
         />
         <Textarea
           placeholder="Context (optional)..."
           value={node.data.context || ''}
           onChange={(e) => updateNodeData(node.id, { context: e.target.value })}
+          onMouseDown={(e) => e.stopPropagation()}
         />
         <Button onClick={handleRefine} disabled={node.data.isProcessing} className="w-full">
           {node.data.isProcessing ? <Loader2 className="animate-spin" /> : 'Refine Prompt'}
@@ -75,6 +77,7 @@ export default function PromptNode({ node, onMouseDown, updateNodeData, deleteNo
             value={node.data.refinedPrompt}
             readOnly
             className="bg-muted"
+            onMouseDown={(e) => e.stopPropagation()}
           />
         )}
       </div>

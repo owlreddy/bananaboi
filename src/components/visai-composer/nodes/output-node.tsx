@@ -91,6 +91,7 @@ function EditImageDialog({
             placeholder="e.g. make it a watercolor painting..."
             value={editPrompt}
             onChange={e => setEditPrompt(e.target.value)}
+            onMouseDown={(e) => e.stopPropagation()}
           />
         </div>
         <DialogFooter>
@@ -305,6 +306,7 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
                   value={node.data.blendingInstructions || ''}
                   onChange={(e) => updateNodeData(node.id, { blendingInstructions: e.target.value })}
                   className="h-24"
+                  onMouseDown={(e) => e.stopPropagation()}
                 />
               <div className="flex gap-2">
                 <Button onClick={handleBlend} disabled={node.data.isProcessing} className="w-full">
