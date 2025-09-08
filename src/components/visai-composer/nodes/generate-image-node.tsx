@@ -1,15 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import type { VisaiNode } from '@/lib/visai-types';
 import BaseNode from './base-node';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
-import { Image as ImageIcon, Loader2, Edit, Shuffle, Download } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Edit, Shuffle, Download, Wand2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { generateInitialImageNode } from '@/ai/flows/generate-initial-image-node';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { getRandomItem } from '../node-editor';
+import { editImage } from '@/ai/flows/edit-image';
+import { Input } from '@/components/ui/input';
 
 const generatePrompts = [
   'A majestic lion with a nebula for a mane, standing on a cliff overlooking a galaxy.',
@@ -35,6 +36,87 @@ const generatePrompts = [
   'A colossal, ancient turtle carrying an entire ecosystem on its back.',
   'A quiet coffee shop in Paris, but the patrons are all famous painters from different eras.',
 ];
+
+function EditImageDialog({
+  imageDataUri,
+  onEdit,
+}: {
+  imageDataUri: string;
+  onEdit: (editedImageDataUri: string) => void;
+}) {
+  const [editPrompt, setEditPrompt] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleApplyEdit = async () => {
+    if (!editPrompt) {
+      toast({
+        title: 'Error',
+        description: 'Please enter an edit prompt.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsEditing(true);
+    try {
+      const result = await editImage({ imageDataUri, prompt: editPrompt });
+      onEdit(result.editedImageDataUri);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Image editing failed:', error);
+      toast({
+        title: 'Editing Failed',
+        description: 'Could not edit image. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="absolute top-2 left-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+          aria-label="Edit image"
+        >
+          <Wand2 className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Image</DialogTitle>
+          <DialogDescription>
+            Describe the changes you want to make to the image.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border bg-muted/20">
+            <Image src={imageDataUri} alt="Image to edit" layout="fill" objectFit="contain" />
+          </div>
+          <Input
+            placeholder="e.g. make it a watercolor painting..."
+            value={editPrompt}
+            onChange={e => setEditPrompt(e.target.value)}
+          />
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button onClick={handleApplyEdit} disabled={isEditing}>
+            {isEditing ? <Loader2 className="animate-spin" /> : 'Apply'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 interface GenerateImageNodeProps {
   node: VisaiNode;
@@ -95,6 +177,10 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
     document.body.removeChild(link);
   };
 
+  const handleImageEdit = (editedImageDataUri: string) => {
+    updateNodeData(node.id, { imageDataUri: editedImageDataUri });
+  };
+
 
   return (
     <BaseNode 
@@ -124,6 +210,7 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
                 <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} width={1024} height={1024} className="rounded-md w-full h-auto" />
               </DialogContent>
             </Dialog>
+            <EditImageDialog imageDataUri={node.data.imageDataUri} onEdit={handleImageEdit} />
             <Button
               variant="secondary"
               size="icon"

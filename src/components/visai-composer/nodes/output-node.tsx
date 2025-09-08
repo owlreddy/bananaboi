@@ -1,15 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import type { VisaiNode, Connection } from '@/lib/visai-types';
 import BaseNode from './base-node';
 import { Button } from '@/components/ui/button';
-import { Combine, Download, Loader2, Edit, RefreshCw, AlertTriangle, Shuffle } from 'lucide-react';
+import { Combine, Download, Loader2, Edit, RefreshCw, AlertTriangle, Shuffle, Wand2 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from '@/components/ui/textarea';
 import { intelligentImageBlending } from '@/ai/flows/intelligent-image-blending';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { getRandomItem } from '../node-editor';
+import { editImage } from '@/ai/flows/edit-image';
+import { Input } from '@/components/ui/input';
 
 const blendInstructions = [
   'Blend the images into a surreal, dreamlike collage.',
@@ -33,6 +34,87 @@ const blendInstructions = [
   'Combine the images in the style of a faded, old photograph.',
   'Create a whimsical and magical scene by merging the two inputs.',
 ];
+
+function EditImageDialog({
+  imageDataUri,
+  onEdit,
+}: {
+  imageDataUri: string;
+  onEdit: (editedImageDataUri: string) => void;
+}) {
+  const [editPrompt, setEditPrompt] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleApplyEdit = async () => {
+    if (!editPrompt) {
+      toast({
+        title: 'Error',
+        description: 'Please enter an edit prompt.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsEditing(true);
+    try {
+      const result = await editImage({ imageDataUri, prompt: editPrompt });
+      onEdit(result.editedImageDataUri);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Image editing failed:', error);
+      toast({
+        title: 'Editing Failed',
+        description: 'Could not edit image. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="absolute top-2 left-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+          aria-label="Edit image"
+        >
+          <Wand2 className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Image</DialogTitle>
+          <DialogDescription>
+            Describe the changes you want to make to the image.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border bg-muted/20">
+            <Image src={imageDataUri} alt="Image to edit" layout="fill" objectFit="contain" />
+          </div>
+          <Input
+            placeholder="e.g. make it a watercolor painting..."
+            value={editPrompt}
+            onChange={e => setEditPrompt(e.target.value)}
+          />
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button onClick={handleApplyEdit} disabled={isEditing}>
+            {isEditing ? <Loader2 className="animate-spin" /> : 'Apply'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 interface OutputNodeProps {
   node: VisaiNode;
@@ -141,6 +223,14 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
     updateNodeData(node.id, { blendingInstructions: getRandomItem(blendInstructions) });
   };
 
+  const handleImageEdit = (editedImageDataUri: string) => {
+    updateNodeData(node.id, { imageDataUri: editedImageDataUri, isDirty: true });
+    toast({
+        title: "Image Edited",
+        description: "Note: This edit is temporary. Regenerate the output to include it in the final blend.",
+    });
+  };
+
 
   return (
     <BaseNode 
@@ -170,6 +260,7 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
                   <Image src={node.data.imageDataUri} alt="Composite image" width={1024} height={1024} className="rounded-md w-full h-auto" />
                 </DialogContent>
               </Dialog>
+              <EditImageDialog imageDataUri={node.data.imageDataUri} onEdit={handleImageEdit} />
               <Button
                 variant="secondary"
                 size="icon"
