@@ -8,13 +8,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { editImage } from '@/ai/flows/edit-image';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 function EditImageDialog({
   imageDataUri,
-  onEdit,
+  onEditSubmit,
 }: {
   imageDataUri: string;
-  onEdit: (editedImageDataUri: string) => void;
+  onEditSubmit: (editPrompt: string) => Promise<void>;
 }) {
   const [editPrompt, setEditPrompt] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -31,20 +32,10 @@ function EditImageDialog({
       return;
     }
     setIsEditing(true);
-    try {
-      const result = await editImage({ imageDataUri, prompt: editPrompt });
-      onEdit(result.editedImageDataUri);
-      setIsOpen(false);
-    } catch (error) {
-      console.error('Image editing failed:', error);
-      toast({
-        title: 'Editing Failed',
-        description: 'Could not edit image. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsEditing(false);
-    }
+    setIsOpen(false);
+    await onEditSubmit(editPrompt);
+    setIsEditing(false);
+    setEditPrompt('');
   };
 
   return (
@@ -125,8 +116,26 @@ export default function UploadImageNode({ node, onMouseDown, updateNodeData, del
     fileInputRef.current?.click();
   };
 
-  const handleImageEdit = (editedImageDataUri: string) => {
-    updateNodeData(node.id, { imageDataUri: editedImageDataUri });
+  const handleImageEdit = async (editPrompt: string) => {
+    updateNodeData(node.id, { isProcessing: true });
+    try {
+      const result = await editImage({
+        imageDataUri: node.data.imageDataUri!,
+        prompt: editPrompt,
+      });
+      updateNodeData(node.id, {
+        imageDataUri: result.editedImageDataUri,
+        isProcessing: false,
+      });
+    } catch (error) {
+      console.error('Image editing failed:', error);
+      toast({
+        title: 'Editing Failed',
+        description: 'Could not edit image. Please try again.',
+        variant: 'destructive',
+      });
+      updateNodeData(node.id, { isProcessing: false });
+    }
   };
 
 
@@ -157,8 +166,15 @@ export default function UploadImageNode({ node, onMouseDown, updateNodeData, del
           <div className="relative group">
             <Dialog>
               <DialogTrigger asChild>
-                <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in bg-muted/20">
+                <div className={cn("relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in bg-muted/20",
+                  node.data.isProcessing && "opacity-50"
+                )}>
                   <Image src={node.data.imageDataUri} alt="Uploaded image" layout="fill" objectFit="contain" data-ai-hint="uploaded background"/>
+                  {node.data.isProcessing && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                      <Loader2 className="w-8 h-8 text-white animate-spin" />
+                    </div>
+                  )}
                 </div>
               </DialogTrigger>
               <DialogContent className="max-w-3xl h-auto p-2">
@@ -169,7 +185,7 @@ export default function UploadImageNode({ node, onMouseDown, updateNodeData, del
                 <Image src={node.data.imageDataUri} alt="Uploaded image" width={1024} height={1024} className="rounded-md w-full h-auto" />
               </DialogContent>
             </Dialog>
-            <EditImageDialog imageDataUri={node.data.imageDataUri} onEdit={handleImageEdit} />
+            <EditImageDialog imageDataUri={node.data.imageDataUri} onEditSubmit={handleImageEdit} />
           </div>
         )}
       </div>

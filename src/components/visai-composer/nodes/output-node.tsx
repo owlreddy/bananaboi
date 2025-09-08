@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { getRandomItem } from '../node-editor';
 import { editImage } from '@/ai/flows/edit-image';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 const blendInstructions = [
   'Blend the images into a surreal, dreamlike collage.',
@@ -37,10 +38,10 @@ const blendInstructions = [
 
 function EditImageDialog({
   imageDataUri,
-  onEdit,
+  onEditSubmit,
 }: {
   imageDataUri: string;
-  onEdit: (editedImageDataUri: string) => void;
+  onEditSubmit: (editPrompt: string) => Promise<void>;
 }) {
   const [editPrompt, setEditPrompt] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -57,20 +58,10 @@ function EditImageDialog({
       return;
     }
     setIsEditing(true);
-    try {
-      const result = await editImage({ imageDataUri, prompt: editPrompt });
-      onEdit(result.editedImageDataUri);
-      setIsOpen(false);
-    } catch (error) {
-      console.error('Image editing failed:', error);
-      toast({
-        title: 'Editing Failed',
-        description: 'Could not edit image. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsEditing(false);
-    }
+    setIsOpen(false);
+    await onEditSubmit(editPrompt);
+    setIsEditing(false);
+    setEditPrompt('');
   };
 
   return (
@@ -223,12 +214,31 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
     updateNodeData(node.id, { blendingInstructions: getRandomItem(blendInstructions) });
   };
 
-  const handleImageEdit = (editedImageDataUri: string) => {
-    updateNodeData(node.id, { imageDataUri: editedImageDataUri, isDirty: true });
-    toast({
+  const handleImageEdit = async (editPrompt: string) => {
+    updateNodeData(node.id, { isProcessing: true });
+    try {
+      const result = await editImage({
+        imageDataUri: node.data.imageDataUri!,
+        prompt: editPrompt,
+      });
+      updateNodeData(node.id, {
+        imageDataUri: result.editedImageDataUri,
+        isProcessing: false,
+      });
+      toast({
         title: "Image Edited",
         description: "Note: This edit is temporary. Regenerate the output to include it in the final blend.",
-    });
+      });
+      setIsDirty(true);
+    } catch (error) {
+      console.error('Image editing failed:', error);
+      toast({
+        title: 'Editing Failed',
+        description: 'Could not edit image. Please try again.',
+        variant: 'destructive',
+      });
+      updateNodeData(node.id, { isProcessing: false });
+    }
   };
 
 
@@ -248,8 +258,15 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
             <div className="relative group">
               <Dialog>
                 <DialogTrigger asChild>
-                  <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in group bg-muted/20">
+                  <div className={cn("relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in group bg-muted/20",
+                    node.data.isProcessing && "opacity-50"
+                  )}>
                     <Image src={node.data.imageDataUri} alt="Composite image" layout="fill" objectFit="contain" data-ai-hint="composite abstract"/>
+                    {node.data.isProcessing && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                      </div>
+                    )}
                   </div>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl h-auto p-2">
@@ -260,7 +277,7 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
                   <Image src={node.data.imageDataUri} alt="Composite image" width={1024} height={1024} className="rounded-md w-full h-auto" />
                 </DialogContent>
               </Dialog>
-              <EditImageDialog imageDataUri={node.data.imageDataUri} onEdit={handleImageEdit} />
+              <EditImageDialog imageDataUri={node.data.imageDataUri} onEditSubmit={handleImageEdit} />
               <Button
                 variant="secondary"
                 size="icon"
