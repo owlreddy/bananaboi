@@ -3,13 +3,36 @@ import React, { useState, useEffect } from 'react';
 import type { VisaiNode, Connection } from '@/lib/visai-types';
 import BaseNode from './base-node';
 import { Button } from '@/components/ui/button';
-import { Combine, Download, Loader2, Edit, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Combine, Download, Loader2, Edit, RefreshCw, AlertTriangle, Shuffle } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from '@/components/ui/textarea';
 import { intelligentImageBlending } from '@/ai/flows/intelligent-image-blending';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { getRandomItem } from '../node-editor';
 
+const blendInstructions = [
+  'Blend the images into a surreal, dreamlike collage.',
+  'Use the style of the first image and the subject of the second.',
+  'Merge the inputs into a single, cohesive cyberpunk scene.',
+  'Create a high-contrast, black and white composition from the inputs.',
+  'Blend the images as if they were part of a double exposure photograph.',
+  'Overlay the images with a watercolor texture.',
+  'Combine the elements into a vintage travel poster.',
+  'Merge the images into a pop-art style comic book panel.',
+  'Create a fantasy landscape by combining the features of both images.',
+  'Blend the images with a glitch art effect.',
+  'Imagine the images are from the same sci-fi movie and combine them.',
+  'Create a photorealistic composite of the two scenes.',
+  'Turn the inputs into a single piece of abstract art.',
+  'Fuse the images together with light leaks and lens flares.',
+  'Reimagine the scene as an oil painting, combining elements from both images.',
+  'Create a minimalist composition using only the key elements from each image.',
+  'Blend the images with a gritty, dystopian atmosphere.',
+  'Merge the inputs into a serene and peaceful nature scene.',
+  'Combine the images in the style of a faded, old photograph.',
+  'Create a whimsical and magical scene by merging the two inputs.',
+];
 
 interface OutputNodeProps {
   node: VisaiNode;
@@ -113,6 +136,11 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
       updateNodeData(node.id, { isProcessing: false });
     }
   };
+  
+  const handleRandomize = () => {
+    updateNodeData(node.id, { blendingInstructions: getRandomItem(blendInstructions) });
+  };
+
 
   return (
     <BaseNode 
@@ -166,13 +194,18 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
                   onChange={(e) => updateNodeData(node.id, { blendingInstructions: e.target.value })}
                   className="h-24"
                 />
-              <Button onClick={handleBlend} disabled={node.data.isProcessing} className="w-full">
-                {node.data.isProcessing ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  'Blend Inputs'
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleBlend} disabled={node.data.isProcessing} className="w-full">
+                  {node.data.isProcessing ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    'Blend Inputs'
+                  )}
+                </Button>
+                <Button onClick={handleRandomize} variant="outline" size="icon" aria-label="Randomize instructions">
+                  <Shuffle className="w-4 h-4" />
+                </Button>
+              </div>
             </>
         ) : (
             isDirty ? (

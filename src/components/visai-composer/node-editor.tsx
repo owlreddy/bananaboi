@@ -35,11 +35,26 @@ const generatePrompts = [
 ];
 
 const blendInstructions = [
-  'Blend the two images seamlessly.',
-  'Combine the images in a surreal, dreamlike collage.',
+  'Blend the images into a surreal, dreamlike collage.',
   'Use the style of the first image and the subject of the second.',
   'Merge the inputs into a single, cohesive cyberpunk scene.',
   'Create a high-contrast, black and white composition from the inputs.',
+  'Blend the images as if they were part of a double exposure photograph.',
+  'Overlay the images with a watercolor texture.',
+  'Combine the elements into a vintage travel poster.',
+  'Merge the images into a pop-art style comic book panel.',
+  'Create a fantasy landscape by combining the features of both images.',
+  'Blend the images with a glitch art effect.',
+  'Imagine the images are from the same sci-fi movie and combine them.',
+  'Create a photorealistic composite of the two scenes.',
+  'Turn the inputs into a single piece of abstract art.',
+  'Fuse the images together with light leaks and lens flares.',
+  'Reimagine the scene as an oil painting, combining elements from both images.',
+  'Create a minimalist composition using only the key elements from each image.',
+  'Blend the images with a gritty, dystopian atmosphere.',
+  'Merge the inputs into a serene and peaceful nature scene.',
+  'Combine the images in the style of a faded, old photograph.',
+  'Create a whimsical and magical scene by merging the two inputs.',
 ];
 
 export const getRandomItem = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
