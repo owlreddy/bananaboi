@@ -112,8 +112,8 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
            <div className="relative group">
             <Dialog>
               <DialogTrigger asChild>
-                <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in">
-                  <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} layout="fill" objectFit="cover" data-ai-hint="generated art" />
+                <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in bg-muted/20">
+                  <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} layout="fill" objectFit="contain" data-ai-hint="generated art" />
                 </div>
               </DialogTrigger>
               <DialogContent className="max-w-3xl h-auto p-2">

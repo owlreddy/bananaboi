@@ -158,8 +158,8 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
             <div className="relative group">
               <Dialog>
                 <DialogTrigger asChild>
-                  <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in group">
-                    <Image src={node.data.imageDataUri} alt="Composite image" layout="fill" objectFit="cover" data-ai-hint="composite abstract"/>
+                  <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in group bg-muted/20">
+                    <Image src={node.data.imageDataUri} alt="Composite image" layout="fill" objectFit="contain" data-ai-hint="composite abstract"/>
                   </div>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl h-auto p-2">

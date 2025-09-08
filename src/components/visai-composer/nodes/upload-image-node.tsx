@@ -68,8 +68,8 @@ export default function UploadImageNode({ node, onMouseDown, updateNodeData, del
         {node.data.imageDataUri && (
           <Dialog>
             <DialogTrigger asChild>
-              <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in">
-                <Image src={node.data.imageDataUri} alt="Uploaded image" layout="fill" objectFit="cover" data-ai-hint="uploaded background"/>
+              <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in bg-muted/20">
+                <Image src={node.data.imageDataUri} alt="Uploaded image" layout="fill" objectFit="contain" data-ai-hint="uploaded background"/>
               </div>
             </DialogTrigger>
             <DialogContent className="max-w-3xl h-auto p-2">
