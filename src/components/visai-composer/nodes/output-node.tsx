@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { VisaiNode, Connection } from '@/lib/visai-types';
 import BaseNode from './base-node';
 import { Button } from '@/components/ui/button';
-import { Combine, Download, Loader2, Edit } from 'lucide-react';
+import { Combine, Download, Loader2, Edit, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from '@/components/ui/textarea';
@@ -22,10 +22,37 @@ interface OutputNodeProps {
 export default function OutputNode({ node, nodes, connections, onMouseDown, updateNodeData, deleteNode }: OutputNodeProps) {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(!node.data.imageDataUri);
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     setIsEditing(!node.data.imageDataUri);
   }, [node.data.imageDataUri]);
+  
+  useEffect(() => {
+    if (!node.data.imageDataUri || !node.data.inputStates) {
+      setIsDirty(false);
+      return;
+    }
+
+    const inputConnections = connections.filter(c => c.toNodeId === node.id);
+    const currentInputNodes = inputConnections
+      .map(c => nodes.find(n => n.id === c.fromNodeId))
+      .filter((n): n is VisaiNode => !!n);
+      
+    // Check if any connected node's image has changed
+    const hasChanged = currentInputNodes.some(inputNode => {
+      const savedState = node.data.inputStates?.[inputNode.id];
+      const currentState = inputNode.data.imageDataUri;
+      return savedState !== currentState;
+    });
+
+    // Check if a connection was removed
+    const removedConnection = Object.keys(node.data.inputStates).some(savedNodeId => 
+      !currentInputNodes.find(n => n.id === savedNodeId)
+    );
+
+    setIsDirty(hasChanged || removedConnection);
+  }, [nodes, connections, node.data.imageDataUri, node.data.inputStates, node.id]);
   
   const handleDownload = () => {
     if (!node.data.imageDataUri) {
@@ -66,7 +93,14 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
         blendingInstructions: node.data.blendingInstructions || "Blend the images together seamlessly."
       });
       
-      updateNodeData(node.id, { imageDataUri: result.compositeImage, isProcessing: false });
+      const inputStates = imageNodes.reduce((acc, n) => {
+        acc[n.id] = n.data.imageDataUri;
+        return acc;
+      }, {} as { [nodeId: string]: string | undefined });
+
+      updateNodeData(node.id, { imageDataUri: result.compositeImage, isProcessing: false, inputStates });
+      setIsDirty(false);
+
     } catch (error) {
        console.error("Image blending failed:", error);
       toast({
@@ -92,8 +126,16 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
         {node.data.imageDataUri && (
           <Dialog>
             <DialogTrigger asChild>
-              <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in">
+              <div className="relative aspect-video w-full rounded-md overflow-hidden border border-border cursor-zoom-in group">
                 <Image src={node.data.imageDataUri} alt="Composite image" layout="fill" objectFit="cover" data-ai-hint="composite abstract"/>
+                {isDirty && (
+                    <div className="absolute inset-0 bg-background/70 flex items-center justify-center">
+                        <div className="text-foreground font-semibold flex items-center gap-2 bg-card/80 px-3 py-1 rounded-full border border-border">
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            <span>Inputs Changed</span>
+                        </div>
+                    </div>
+                )}
               </div>
             </DialogTrigger>
             <DialogContent className="max-w-3xl h-auto p-2">
@@ -119,14 +161,21 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
               </Button>
             </>
         ) : (
-            <Button onClick={() => setIsEditing(true)} variant="outline" className="w-full">
-                <Edit className="mr-2 h-4 w-4" />
-                Modify
-            </Button>
+            isDirty ? (
+                <Button onClick={handleBlend} disabled={node.data.isProcessing} className="w-full">
+                    {node.data.isProcessing ? <Loader2 className="animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                    Regenerate
+                </Button>
+            ) : (
+                <Button onClick={() => setIsEditing(true)} variant="outline" className="w-full">
+                    <Edit className="mr-2 h-4 w-4" />
+                    Modify
+                </Button>
+            )
         )}
 
         {node.data.imageDataUri && (
-          <Button onClick={handleDownload} variant="outline" className="w-full">
+          <Button onClick={handleDownload} variant="outline" className="w-full" disabled={isDirty}>
             <Download className="mr-2 h-4 w-4" />
             Download Image
           </Button>

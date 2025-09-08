@@ -7,6 +7,7 @@ export interface NodeData {
   imageDataUri?: string;
   blendingInstructions?: string;
   isProcessing?: boolean;
+  inputStates?: { [nodeId: string]: string | undefined; };
 }
 
 export interface VisaiNode {
