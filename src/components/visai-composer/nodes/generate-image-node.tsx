@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { Image as ImageIcon, Loader2, Edit, Shuffle, Download } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { generateInitialImageNode } from '@/ai/flows/generate-initial-image-node';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getRandomItem } from '../node-editor';
 
 const generatePrompts = [
@@ -117,7 +117,11 @@ export default function GenerateImageNode({ node, onMouseDown, updateNodeData, d
                 </div>
               </DialogTrigger>
               <DialogContent className="max-w-3xl h-auto p-2">
-                  <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} width={1024} height={1024} className="rounded-md w-full h-auto" />
+                <DialogHeader className="sr-only">
+                  <DialogTitle>Generated Image</DialogTitle>
+                  <DialogDescription>A larger view of the generated image. Prompt: {node.data.prompt}</DialogDescription>
+                </DialogHeader>
+                <Image src={node.data.imageDataUri} alt={node.data.prompt || 'Generated image'} width={1024} height={1024} className="rounded-md w-full h-auto" />
               </DialogContent>
             </Dialog>
             <Button

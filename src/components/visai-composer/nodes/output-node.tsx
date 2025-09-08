@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from '@/components/ui/textarea';
 import { intelligentImageBlending } from '@/ai/flows/intelligent-image-blending';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getRandomItem } from '../node-editor';
 
 const blendInstructions = [
@@ -163,6 +163,10 @@ export default function OutputNode({ node, nodes, connections, onMouseDown, upda
                   </div>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl h-auto p-2">
+                  <DialogHeader className="sr-only">
+                    <DialogTitle>Composite Image</DialogTitle>
+                    <DialogDescription>The final blended image.</DialogDescription>
+                  </DialogHeader>
                   <Image src={node.data.imageDataUri} alt="Composite image" width={1024} height={1024} className="rounded-md w-full h-auto" />
                 </DialogContent>
               </Dialog>
